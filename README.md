@@ -29,7 +29,7 @@ key_statement   ::= "key" key_name key_type ";";
 
 timesig_statement ::= "timesig" number "/" number ";";
 
-track_statement ::= "track" number "on channel" number ";";
+track_statement ::= "track" number "on_channel" number ";";
 
 note_statement  ::= note_name octave duration [ velocity ] [ "at" time ] ";";
 
