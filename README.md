@@ -1,6 +1,6 @@
-# midi_lang
+# Propositional Language
 
-# EBNF Grammar for MIDI Language
+# EBNF Grammar for Propositional Language
 
 ## Program Structure
 ```ebnf
@@ -26,7 +26,11 @@ statement                     ::=
 
 print_statement               ::= "print" , "(" , string , [ "," , expression , { "," , expression } ] , ")" ;
 
-declaration_statement         ::= identifier , ":" , type , "=" , expression ;
+declaration_statement         ::= identifier_decl , ":" , type , ";" ;
+
+identifier_decl               ::= identifier , [ "=" , expression ] , { "," , identifier , [ "=" , expression ] } ;
+
+
 
 assignment_statement          ::= identifier , "=" , expression ;
 
@@ -62,7 +66,7 @@ number                        ::= digit , { digit } ;
 
 log                           ::= "verum" | "falsum" ;
 
-type                          ::= "int" |  "log";
+type                          ::= "int" |  "log" | "empty";
 
 string                        ::= '"' , { character } , '"' ;
 
