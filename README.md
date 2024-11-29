@@ -4,67 +4,104 @@
 
 ## Program Structure
 ```ebnf
-<PROGRAM> ::= <STATEMENT>* ;
+script          ::= { statement };
 
-<STATEMENT> ::= <VARIABLE_DECLARATION> 
-              | <VARIABLE_ASSIGNMENT>
-              | <TEMPO_STATEMENT> 
-              | <NOTE_STATEMENT>
-              | <LOOP_STATEMENT>
-              | <IF_STATEMENT> ;
+statement       ::= tempo_statement
+                  | key_statement
+                  | timesig_statement
+                  | track_statement
+                  | note_statement
+                  | rest_statement
+                  | repeat_statement
+                  | variable_assignment
+                  | play_statement
+                  | export_statement
+                  | meta_statement
+                  | dynamic_statement
+                  | conditional_statement
+                  | function_definition
+                  | function_call
+                  | while_statement;
 
-<LOOP_STATEMENT> ::= "loop" "(" <RELATIONAL_EXPRESSION> ")" <BLOCK> ;
+tempo_statement ::= "tempo" number "bpm" ";";
 
-<IF_STATEMENT> ::= "if" "(" <RELATIONAL_EXPRESSION> ")" <BLOCK> [ "else" <BLOCK> ] ;
+key_statement   ::= "key" key_name key_type ";";
 
-<BLOCK> ::= "{" <STATEMENT>* "}" ;
+timesig_statement ::= "timesig" number "/" number ";";
 
-<TEMPO_STATEMENT> ::= "tempo" "=" <EXPRESSION> ";" ;
+track_statement ::= "track" number "on channel" number ";";
 
-<PLAY_STATEMENT> ::= "play" <RELATIONAL_EXPRESSION> <RELATIONAL_EXPRESSION> 
-[<RELATIONAL_EXPRESSION>] [ "at" <RELATIONAL_EXPRESSION>] ";" ;
+note_statement  ::= note_name octave duration [ velocity ] [ "at" time ] ";";
 
-<VARIABLE_DECLARATION> ::= <TYPE> <IDENTIFIER> ["[" <RELATIONAL_EXPRESSION> "]"]
-[ "=" <RELATIONAL_EXPRESSION> ] ( "," <IDENTIFIER> [ "=" <RELATIONAL_EXPRESSION> ] )* ";" ;
+rest_statement  ::= "rest" duration [ "at" time ] ";";
 
-<VARIABLE_ASSIGNMENT> ::= <IDENTIFIER> ["[" <RELATIONAL_EXPRESSION> "]"]
-"=" <RELATIONAL_EXPRESSION> ";" ;
+repeat_statement ::= "repeat" number "{" { statement } "}";
 
-<EXPRESSION> ::= <TERM> ( ("||" | "+" | "-") <TERM> )* ;
+variable_assignment ::= "let" identifier "=" expression ";";
 
-<RELATIONAL_EXPRESSION> ::= <EXPRESSION> ( ("==" | "!=" | "<" | ">" | "<=" | ">=")
-<EXPRESSION> )? ;
+expression      ::= boolean_expression | numeric_expression;
 
+numeric_expression ::= term { ("+" | "-" | "*" | "/") term };
+term            ::= factor { ("*" | "/") factor };
+factor          ::= number | identifier | "(" numeric_expression ")" ;
 
-<TERM> ::= <FACTOR> ( ("*" | "/" | "&&") <FACTOR> )* ;
+boolean_expression ::= boolean_term { ("&&" | "||") boolean_term };
+boolean_term    ::= boolean_factor | "!" boolean_factor;
+boolean_factor  ::= comparison | boolean_literal | identifier | "(" boolean_expression ")";
+comparison      ::= numeric_expression ("<" | "<=" | ">" | ">=" | "==" | "!=") numeric_expression;
 
+boolean_literal ::= "true" | "false";
 
-<FACTOR> ::= ( ("+" | "-" | "!") <FACTOR> )
-           | <NUMBER>
-           | "(" <RELATIONAL_EXPRESSION> ")"
-           | <IDENTIFIER>
-           | <NOTE>
-           | <CHORD> ;
+conditional_statement ::= "if" "(" expression ")" "{" { statement } "}" [ "else" "{" { statement } "}" ];
 
+while_statement ::= "while" "(" expression ")" "{" { statement } "}";
 
+function_definition ::= "fn" identifier "(" [ parameter_list ] ")" "{" { statement } "}";
 
-<CHORD> ::= "[" <NOTE> ( "," <NOTE> )* "]" ;
+parameter_list  ::= identifier { "," identifier };
 
-<NOTE> ::= <NOTE_NAME> <OCTAVE> ;
+function_call   ::= identifier "(" [ argument_list ] ");";
+argument_list   ::= expression { "," expression };
 
-<NOTE_NAME> ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" [ "#" | "b" ] ;
+dynamic_statement ::= crescendo | decrescendo;
 
-<OCTAVE> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" ;
+crescendo       ::= "crescendo" "{" { note_statement } "}" "from" velocity "to" velocity ";";
 
-<DURATION> ::= <NUMBER> ;
+decrescendo     ::= "decrescendo" "{" { note_statement } "}" "from" velocity "to" velocity ";";
 
-<IDENTIFIER> ::= <LETTER> (<LETTER> | <DIGIT> | "_")* ;
+play_statement  ::= "play" identifier [ "at" time ] ";";
 
-<LETTER> ::= "a" | ... | "z" | "A" | ... | "Z" ;
+export_statement ::= "export" "\"" filename "\"" ";";
 
-<NUMBER> ::= <DIGIT>+ ;
+meta_statement ::= "metatext" "\"" text "\"" ";";
 
-<DIGIT> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+note_name       ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" 
+                  | "A#" | "C#" | "D#" | "F#" | "G#" 
+                  | "Bb" | "Db" | "Eb" | "Gb" | "Ab";
 
-<TYPE> ::= "INT" | "NOTE" | "CHORD";
+chord_statement ::= "play chord" chord_name duration [ velocity ] ";";
+
+chord_name      ::= note_name chord_type;
+chord_type      ::= "maj" | "min" | "dim" | "aug" | "maj7" | "min7" | "7";
+
+duration        ::= "whole" | "half" | "quarter" | "eighth" | "sixteenth";
+
+velocity        ::= "piano" | "mezzo_piano" | "mezzo_forte" | "forte";
+
+key_name        ::= note_name;
+key_type        ::= "major" | "minor";
+
+instrument_statement ::= "instrument" instrument_name ";";
+instrument_name ::= "piano" | "strings" | "guitar" | "bass" | "drums" | ... ;
+
+filename        ::= identifier;
+
+time            ::= digit ":" digit;  (* Bars and beats *)
+number          ::= digit { digit } [ "." digit { digit } ]; (* Integers and floats *)
+identifier      ::= letter { letter | digit | "_" | "-" };
+text            ::= { any_character };
+digit           ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+letter          ::= "a" | "b" | "c" | ... | "z" | "A" | "B" | "C" | ... | "Z";
+any_character   ::= ? any valid text character ? ;
+
 ```
