@@ -4,104 +4,74 @@
 
 ## Program Structure
 ```ebnf
-script          ::= { statement };
+program                       ::= { function_declaration } ;
 
-statement       ::= tempo_statement
-                  | key_statement
-                  | timesig_statement
-                  | track_statement
-                  | note_statement
-                  | rest_statement
-                  | repeat_statement
-                  | variable_assignment
-                  | play_statement
-                  | export_statement
-                  | meta_statement
-                  | dynamic_statement
-                  | conditional_statement
-                  | function_definition
-                  | function_call
-                  | while_statement;
+function_declaration          ::= "fn" , identifier , "(" , [ parameter_list ] , ")" , ":" , type , block ;
 
-tempo_statement ::= "tempo" number "bpm" ";";
+parameter_list                ::= parameter , { "," , parameter } ;
+parameter                     ::= identifier , ":" , type ;
 
-key_statement   ::= "key" key_name key_type ";";
+block                         ::= "{" , { statement , ";" } , "}" ;
 
-timesig_statement ::= "timesig" number "/" number ";";
+statement                     ::= 
+                                   λ
+                                 | print_statement
+                                 | declaration_statement
+                                 | assignment_statement
+                                 | func_call_statement
+                                 | while_statement
+                                 | for_statement
+                                 | if_statement
+                                 | function_declaration ;
 
-track_statement ::= "track" number "on_channel" number ";";
+print_statement               ::= "print" , "(" , string , [ "," , expression , { "," , expression } ] , ")" ;
 
-note_statement  ::= note_name octave duration [ velocity ] [ "at" time ] ";";
+declaration_statement         ::= identifier , ":" , type , "=" , expression ;
 
-rest_statement  ::= "rest" duration [ "at" time ] ";";
+assignment_statement          ::= identifier , "=" , expression ;
 
-repeat_statement ::= "repeat" number "{" { statement } "}";
+if_statement                  ::= "if" , "(" , expression , ")" , block , [ "else" , block ] ;
 
-variable_assignment ::= "let" identifier "=" expression ";";
+while_statement               ::= "while" , "(" , expression , ")" , block ;
 
-expression      ::= boolean_expression | numeric_expression;
+for_statement                 ::= "for" , "(" , assignment_statement , ";" , expression , ";" , assignment_statement , ")" , block ;
 
-numeric_expression ::= term { ("+" | "-" | "*" | "/") term };
-term            ::= factor { ("*" | "/") factor };
-factor          ::= number | identifier | "(" numeric_expression ")" ;
+func_call_statement           ::= identifier , "(" , [ argument_list ] , ")" ;
 
-boolean_expression ::= boolean_term { ("&&" | "||") boolean_term };
-boolean_term    ::= boolean_factor | "!" boolean_factor;
-boolean_factor  ::= comparison | boolean_literal | identifier | "(" boolean_expression ")";
-comparison      ::= numeric_expression ("<" | "<=" | ">" | ">=" | "==" | "!=") numeric_expression;
+argument_list                 ::= expression , { "," , expression } ;
 
-boolean_literal ::= "true" | "false";
+expression                    ::= biconditional , { ( "==" | "<" | ">" ) , biconditional } ;
 
-conditional_statement ::= "if" "(" expression ")" "{" { statement } "}" [ "else" "{" { statement } "}" ];
+biconditional                 ::= implication , { ( "↔" | "<->" ) , implication } ;
 
-while_statement ::= "while" "(" expression ")" "{" { statement } "}";
+implication                   ::= disjunction , { ( "→" | "->" ) , disjunction } ;
 
-function_definition ::= "fn" identifier "(" [ parameter_list ] ")" "{" { statement } "}";
+disjunction                   ::= conjunction , { ( "∨" | "||" ) , conjunction } ;
 
-parameter_list  ::= identifier { "," identifier };
+conjunction                   ::= sum , { ( "∧" | "&&" ) , sum } ;
 
-function_call   ::= identifier "(" [ argument_list ] ");";
-argument_list   ::= expression { "," expression };
+sum                           ::= term , { ( "+" | "-" ) , term } ;
 
-dynamic_statement ::= crescendo | decrescendo;
+term                          ::= factor , { ( "*" | "/" ) , factor } ;
 
-crescendo       ::= "crescendo" "{" { note_statement } "}" "from" velocity "to" velocity ";";
+factor                        ::= [ "+" | "-" | ( "¬" | "!" | "~" ) ] , atom ;
 
-decrescendo     ::= "decrescendo" "{" { note_statement } "}" "from" velocity "to" velocity ";";
+atom                          ::= "(" , expression , ")" | identifier | number | log;
 
-play_statement  ::= "play" identifier [ "at" time ] ";";
+number                        ::= digit , { digit } ;
 
-export_statement ::= "export" "\"" filename "\"" ";";
+log                           ::= "verum" | "falsum" ;
 
-meta_statement ::= "metatext" "\"" text "\"" ";";
+type                          ::= "int" |  "log";
 
-note_name       ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" 
-                  | "A#" | "C#" | "D#" | "F#" | "G#" 
-                  | "Bb" | "Db" | "Eb" | "Gb" | "Ab";
+string                        ::= '"' , { character } , '"' ;
 
-chord_statement ::= "play chord" chord_name duration [ velocity ] ";";
+identifier                    ::= letter , { letter | digit | "_" } ;
 
-chord_name      ::= note_name chord_type;
-chord_type      ::= "maj" | "min" | "dim" | "aug" | "maj7" | "min7" | "7";
+letter                        ::= "a" | "b" | ... | "z" | "A" | "B" | ... | "Z" ;
 
-duration        ::= "whole" | "half" | "quarter" | "eighth" | "sixteenth";
+digit                         ::= "0" | "1" | ... | "9" ;
 
-velocity        ::= "piano" | "mezzo_piano" | "mezzo_forte" | "forte";
-
-key_name        ::= note_name;
-key_type        ::= "major" | "minor";
-
-instrument_statement ::= "instrument" instrument_name ";";
-instrument_name ::= "piano" | "strings" | "guitar" | "bass" | "drums" | ... ;
-
-filename        ::= identifier;
-
-time            ::= digit ":" digit;  (* Bars and beats *)
-number          ::= digit { digit } [ "." digit { digit } ]; (* Integers and floats *)
-identifier      ::= letter { letter | digit | "_" | "-" };
-text            ::= { any_character };
-digit           ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-letter          ::= "a" | "b" | "c" | ... | "z" | "A" | "B" | "C" | ... | "Z";
-any_character   ::= ? any valid text character ? ;
+character                     ::= letter | digit | " " | any_other_printable_character ;
 
 ```
