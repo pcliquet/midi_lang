@@ -1,46 +1,39 @@
-# Propositional Language
+# midi_lang
 
-# EBNF Grammar for Propositional Language
+# EBNF Grammar for MIDI Language
 
 ## Program Structure
 ```ebnf
-program                       ::= { function_declaration } ;
+would this work then?
+program 		      ::= { statement} ;
 
-function_declaration          ::= "fn" , identifier , "(" , [ parameter_list ] , ")" , ":" , type , block ;
-
-parameter_list                ::= parameter , { "," , parameter } ;
-parameter                     ::= identifier , ":" , type ;
 
 block                         ::= "{" , { statement , ";" } , "}" ;
 
 statement                     ::= 
-                                   λ
-                                 | print_statement
+                                  {
+                                  print_statement
                                  | declaration_statement
                                  | assignment_statement
-                                 | func_call_statement
                                  | while_statement
                                  | for_statement
-                                 | if_statement
-                                 | function_declaration ;
+                                 | if_statement };
 
-print_statement               ::= "print" , "(" , string , [ "," , expression , { "," , expression } ] , ")" ;
+print_statement               ::= "exhibit" , "(" , string , [ "," , expression , { "," , expression } ] , ")", ";";
 
 declaration_statement         ::= identifier_decl , ":" , type , ";" ;
 
-identifier_decl               ::= identifier , [ "=" , expression ] , { "," , identifier , [ "=" , expression ] } ;
+identifier_decl               ::= identifier , [ "=" , expression ] , { "," , identifier , [ "=" , expression ] }, ";" ;
 
 
 
 assignment_statement          ::= identifier , "=" , expression ;
 
-if_statement                  ::= "if" , "(" , expression , ")" , block , [ "else" , block ] ;
+if_statement                  ::= "branch" , "(" , expression , ")" , block , [ "else" , block ] ;
 
 while_statement               ::= "while" , "(" , expression , ")" , block ;
 
 for_statement                 ::= "for" , "(" , assignment_statement , ";" , expression , ";" , assignment_statement , ")" , block ;
-
-func_call_statement           ::= identifier , "(" , [ argument_list ] , ")" ;
 
 argument_list                 ::= expression , { "," , expression } ;
 
@@ -66,7 +59,7 @@ number                        ::= digit , { digit } ;
 
 log                           ::= "verum" | "falsum" ;
 
-type                          ::= "int" |  "log" | "empty";
+type                          ::= "int" |  "log";
 
 string                        ::= '"' , { character } , '"' ;
 
@@ -79,3 +72,4 @@ digit                         ::= "0" | "1" | ... | "9" ;
 character                     ::= letter | digit | " " | any_other_printable_character ;
 
 ```
+
