@@ -4,7 +4,6 @@
 
 ## Program Structure
 ```ebnf
-would this work then?
 program 		      ::= { statement} ;
 
 
